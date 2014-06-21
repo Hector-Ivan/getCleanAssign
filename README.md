@@ -25,40 +25,33 @@ y_train<- read.csv("./train/y_train.txt",header=FALSE,sep="")<br>
 subject_train<-read.csv("./train/subject_train.txt",header=FALSE,sep="")
 
 
- <h2>PART 1: Merging training and test sets to make 1 big d.f</h2>
- **Merge 3 test files together, then 3 train files together, finally**
- merge test and train sets to each other**<br>
+ <h2>PART 1: Merging training and test sets to make 1 big data frame</h2>
+ **Merge 3 test files together, then 3 train files together, finally merge test and train sets to each other**<br>
  *change variable names for y_test and subject_test. This facilitates the merging of the various sets.*<br>
 names(y_test)<-"activity.labels"<br>
 names(subject_test)<- "subjectID"<br>
-
-          *merge X_test,y_test and subject_test into 1 data.frame*<br>
+    *merge X_test,y_test and subject_test into 1 data.frame*<br>
 testDat<- cbind(X_test,y_test,subject_test)<br>
-
-          *change var names for y_train and subject_train*<br>
-
+    *change var names for y_train and subject_train*<br>
 names(y_train)<-"activity.labels"<br>
 names(subject_train)<- "subjectID"<br>
-
-          *merge X_train, y_train and subject_train into 1 d.f*<br>
+    *merge X_train, y_train and subject_train into 1 d.f*<br>
 trainDat<- cbind(X_train, y_train, subject_train)<br>
+    **lastly, merge testDat and trainDat to make one big d.f**<br>
+bigDat<- rbind(testDat,trainDat)
 
- **lastly, merge testDat and trainDat to make one big d.f**<br>
-bigDat<- rbind(testDat,trainDat)<br>
 
-
- <h2>PART 2: extract vars that have std() or mean()</h2>
+ <h2>PART 2: Extract variables that have std() or mean() in the name.</h2>
          *Read in features.txt and use as column names for X_test.*<br>
 varNames<- read.csv("./features.txt",header=FALSE, sep="")<br>
-names(bigDat)<- c(as.character(varNames$V2),"activity.labels","subjectID")
-        *extract relevant variables from bigDat by logical vector*<br>
+names(bigDat)<- c(as.character(varNames$V2),"activity.labels","subjectID")<br>
+        *Extract relevant variables from bigDat by logical vector.*<br>
 colNamesVec<-grepl("mean\\(\\)|std\\(\\)|activity|subject", names(bigDat))<br>
 bigDat<-bigDat[,colNamesVec]<br>
 
 
  <h2>PART 3: change 'activity.labels' from number codes to words</h2>
-     *using activity_labels.txt as source of activity names*<br>
-
+     *Using activity_labels.txt as the source of activity names.*<br>
 bigDat$activity.labels<-as.factor(bigDat$activity.labels)<br>
 levels(bigDat$activity.labels)<- list(WALKING="1",WALKING_UPSTAIRS="2",
                                       WALKING_DOWNSTAIRS="3", SITTING="4"
@@ -66,7 +59,7 @@ levels(bigDat$activity.labels)<- list(WALKING="1",WALKING_UPSTAIRS="2",
 
 
  <h2>PART 4: manually label the var names descriptively</h2>
- * while bulky, I chose to manually create a vector because writing code to extract certain elements of the list of variable names would have been too complicated, this was simpler for me.*<br>
+ * While bulky, I chose to manually create a vector because writing code to extract certain elements of the list of variable names would have been too complicated, this was simpler for me.*<br>
 
 names(bigDat)<- c("tBodyAcc_mean_X","tBodyAcc_mean_Y","tBodyAcc_mean_Z","tBodyAcc_std_X","tBodyAcc_std_Y","tBodyAcc_std_Z","tGravityAcc_mean_X","tGravityAcc_mean_Y","tGravityAcc_mean_Z","tGravityAcc_std_X"
                   ,"tGravityAcc_std_Y","tGravityAcc_std_Z","tBodyAccJerk_mean_X","tBodyAccJerk_mean_Y","tBodyAccJerk_mean_Z","tBodyAccJerk_std_X","tBodyAccJerk_std_Y","tBodyAccJerk_std_Z","tBodyGyro_mean_X","tBodyGyro_mean_Y" 
@@ -79,7 +72,6 @@ names(bigDat)<- c("tBodyAcc_mean_X","tBodyAcc_mean_Y","tBodyAcc_mean_Z","tBodyAc
 
 
  <h2>PART 5: Creates a second, independent tidy data set</h2> 
-  *with the average of each variable for each activity and each subject. Here is where the 'reshape2' package comes in handy*<br>
-
+  *Using the average of each variable for each activity and each subject. Here is where the 'reshape2' package comes in handy.*<br>
 meltDat<-melt(bigDat, id=c("subjectID","activity"))<br>
 castDat<- dcast(meltDat, subjectID+activity ~ variable,fun.aggregate=mean)
