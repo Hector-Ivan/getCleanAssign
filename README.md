@@ -1,17 +1,17 @@
 getCleanAssign
 ==============
 
-this repo is for the final project for JHOPS's 'Getting and Cleaning Data' and includes; run_analysis.R, codebook.md and README.md
+This repo is for the final project for JHOPS's 'Getting and Cleaning Data' and includes; run_analysis.R, codebook.md and README.md
 
 <p>The original data comes from https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip with all the necessary files inside a zip file. This data was part of a study conducted at UCI about 'Human Activity Recognition Using Smartphones' and the info. can be accessed here: http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones. What follows below is a detailed description of my script which has as its end goal, the production of a 'tidy' data set with means for each combination of variable, subject and activity. For this script, it is assumed that the zip file has been unzipped and the relevant files are in your working directory.</p>
  
  <h2>Needed packages; 'reshape2' will be used in step 5</h2>
 
-install.packages("reshape2")
+install.packages("reshape2")<br>
 library(reshape2)
 
  <h2>PRE-PROCESSING:  read in all files</h2>
-  **read test files**
+  **read test files**<br>
 <code>
 X_test<- read.csv("./test/X_test.txt",header=FALSE,sep="",comment.char="",colClasses="numeric")<br>
 y_test<- read.csv("./test/y_test.txt",header=FALSE,sep="")<br>
@@ -26,12 +26,13 @@ subject_train<-read.csv("./train/subject_train.txt",header=FALSE,sep="")<br>
 </code>
 
  <h2>PART 1: Merging training and test sets to make 1 big d.f</h2>
- **merge 3 test files together then 3 train files together, then**
- **test and train sets to each other**<br>
- *change variable names for y_test and subject_test. This facilitates the merging of the various sets*<br>
-<code>
+ **Merge 3 test files together, then 3 train files together, finally**
+ merge test and train sets to each other**<br>
+ *change variable names for y_test and subject_test. This facilitates the merging of the various sets.*<br>
+<code><br>
 names(y_test)<-"activity.labels"<br>
-names(subject_test)<- "subjectID"<br></code>
+names(subject_test)<- "subjectID"<br>
+</code><br>
           *merge X_test,y_test and subject_test into 1 data.frame*<br>
 <code>testDat<- cbind(X_test,y_test,subject_test)<br>
 </code>
@@ -50,7 +51,7 @@ bigDat<- rbind(testDat,trainDat)<br>
 </code>
 
  <h2>PART 2: extract vars that have std() or mean()</h2>
-         *read in features.txt and use as col names for X_test*<br>
+         *Read in features.txt and use as column names for X_test.*<br>
 <code>
 varNames<- read.csv("./features.txt",header=FALSE, sep="")<br>
 names(bigDat)<- c(as.character(varNames$V2),"activity.labels","subjectID")<br>
@@ -87,5 +88,5 @@ names(bigDat)<- c("tBodyAcc_mean_X","tBodyAcc_mean_Y","tBodyAcc_mean_Z","tBodyAc
   *with the average of each variable for each activity and each subject. Here is where the 'reshape2' package comes in handy*<br>
 <code>
 meltDat<-melt(bigDat, id=c("subjectID","activity"))<br>
-castDat<- dcast(meltDat, subjectID+activity ~ variable,fun.aggregate=mean)<br>
+<br>castDat<- dcast(meltDat, subjectID+activity ~ variable,fun.aggregate=mean)
 </code>
