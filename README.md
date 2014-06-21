@@ -5,53 +5,56 @@ this repo is for the final project for JHOPS's 'Getting and Cleaning Data' and i
 
 The original data comes from https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip with all the necessary files inside a zip file. This data was part of a study conducted at UCI about 'Human Activity Recognition Using Smartphones' and the info. can be accessed here: http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones. What follows below is a detailed description of my script which has as its end goal, the production of a 'tidy' data set with means for each combination of variable, subject and activity. For this script, it is assumed that the zip file has been unzipped and the relevant files are in your working directory.
  
- ## Needed packages; 'reshape2' will be used in step 5
+ <h2>Needed packages; 'reshape2' will be used in step 5</h2>
+
 install.packages("reshape2")
 library(reshape2)
 
- ## PRE-PROCESSING:  read in all files
-  ###read test files
+ <h2>PRE-PROCESSING:  read in all files</h2>
+  **read test files**
+
 X_test<- read.csv("./test/X_test.txt",header=FALSE,sep="",comment.char="",colClasses="numeric")
 y_test<- read.csv("./test/y_test.txt",header=FALSE,sep="")
 subject_test<- read.csv("./test/subject_test.txt",header=FALSE,sep="")
-  ###read in train files
+  
+ **read in train files**
 X_train<- read.csv("./train/X_train.txt",header=FALSE,sep="",comment.char="",colClasses="numeric")
 y_train<- read.csv("./train/y_train.txt",header=FALSE,sep="")
 subject_train<-read.csv("./train/subject_train.txt",header=FALSE,sep="")
 
- ## PART 1: Merging training and test sets to make 1 big d.f
- ##merge 3 test files together then 3 train files together, then
- ##test and train sets to each other
-          ###change variable names for y_test and subject_test
- *this facilitates the merging of the various sets*
+ <h2>PART 1: Merging training and test sets to make 1 big d.f</h2>
+ **merge 3 test files together then 3 train files together, then**
+ **test and train sets to each other**
+          *change variable names for y_test and subject_test*
+          *this facilitates the merging of the various sets*
 names(y_test)<-"activity.labels"
 names(subject_test)<- "subjectID"
-          ###merge X_test,y_test and subject_test into 1 data.frame
+          *merge X_test,y_test and subject_test into 1 data.frame*
 testDat<- cbind(X_test,y_test,subject_test)
-          ###change var names for y_train and subject_train
+          *change var names for y_train and subject_train*
 names(y_train)<-"activity.labels"
 names(subject_train)<- "subjectID"
-          ###merge X_train, y_train and subject_train into 1 d.f
+          *merge X_train, y_train and subject_train into 1 d.f*
 trainDat<- cbind(X_train, y_train, subject_train)
- ### lastly, merge testDat and trainDat to make one big d.f
+ **lastly, merge testDat and trainDat to make one big d.f**
 bigDat<- rbind(testDat,trainDat)
 
- ## PART 2: extract vars that have std() or mean()
-         ###read in features.txt and use as col names for X_test
+ <h2>PART 2: extract vars that have std() or mean()</h2>
+         *read in features.txt and use as col names for X_test*
 varNames<- read.csv("./features.txt",header=FALSE, sep="")
 names(bigDat)<- c(as.character(varNames$V2),"activity.labels","subjectID")
-        ###extract relevant variables from bigDat by logical vector
+        *extract relevant variables from bigDat by logical vector*
 colNamesVec<-grepl("mean\\(\\)|std\\(\\)|activity|subject", names(bigDat))
 bigDat<-bigDat[,colNamesVec]
 
- ## PART 3: change 'activity.labels' from number codes to words using
- ##activity_labels.txt
+ <h2>PART 3: change 'activity.labels' from number codes to words</h2>
+     *using activity_labels.txt as source of activity names*
 bigDat$activity.labels<-as.factor(bigDat$activity.labels)
 levels(bigDat$activity.labels)<- list(WALKING="1",WALKING_UPSTAIRS="2",
                                       WALKING_DOWNSTAIRS="3", SITTING="4"
                                       , STANDING="5",LAYING="6")
 
- ## PART 4: manually label the var names descriptively
+ <h2>PART 4: manually label the var names descriptively</h2>
  * while bulky, I chose to manually create a vector because writing code to extract certain elements of the list of variable names would have been too complicated, this was simpler for me.*
 names(bigDat)<- c("tBodyAcc_mean_X","tBodyAcc_mean_Y","tBodyAcc_mean_Z","tBodyAcc_std_X","tBodyAcc_std_Y","tBodyAcc_std_Z","tGravityAcc_mean_X","tGravityAcc_mean_Y","tGravityAcc_mean_Z","tGravityAcc_std_X"
                   ,"tGravityAcc_std_Y","tGravityAcc_std_Z","tBodyAccJerk_mean_X","tBodyAccJerk_mean_Y","tBodyAccJerk_mean_Z","tBodyAccJerk_std_X","tBodyAccJerk_std_Y","tBodyAccJerk_std_Z","tBodyGyro_mean_X","tBodyGyro_mean_Y" 
@@ -62,7 +65,8 @@ names(bigDat)<- c("tBodyAcc_mean_X","tBodyAcc_mean_Y","tBodyAcc_mean_Z","tBodyAc
                   ,"fBodyAccJerkMag_mean","fBodyAccJerkMag_std","fBodyGyroMag_mean","fBodyGyroMag_std","fBodyGyroJerkMag_mean","fBodyGyroJerkMag_std","activity","subjectID" )
 
 
- ## PART 5: Creates a second, independent tidy data set with the average of       	##each variable for each activity and each subject. 
- *here is where the 'reshape2' package comes in handy*
+ <h2>PART 5: Creates a second, independent tidy data set</h2> 
+  *with the average of each variable for each activity and each subject* 
+  *here is where the 'reshape2' package comes in handy*
 meltDat<-melt(bigDat, id=c("subjectID","activity")) 
 castDat<- dcast(meltDat, subjectID+activity ~ variable,fun.aggregate=mean)
