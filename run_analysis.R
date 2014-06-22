@@ -3,6 +3,7 @@ library(reshape2)
 
 ##### This script will have minimal comments. For a more detailed
 ### explanation, see README.md in this repo.
+
 ## PRE-PROCESSING
 X_test<- read.csv("./test/X_test.txt",header=FALSE,sep="",comment.char="",colClasses="numeric")
 y_test<- read.csv("./test/y_test.txt",header=FALSE,sep="")
@@ -52,7 +53,13 @@ names(bigDat)<- c("tBodyAcc_mean_X","tBodyAcc_mean_Y","tBodyAcc_mean_Z","tBodyAc
 
 
 ##PART 5: Creates a second, independent tidy data set with the average of each variable for each activity and each subject. 
-#use aggregate or plyr with casting/melting
+#use reshape2 package with melting/casting.
 meltDat<-melt(bigDat, id=c("subjectID","activity")) 
 castDat<- dcast(meltDat, subjectID+activity ~ variable,fun.aggregate=mean)
+head(castDat)
 
+### OPTIONAL: convert from wide form to long form for the purpose 
+# of writing out to a legible txt file.
+#flipDat<- dcast(meltDat,subjectID+activity+variable~...,fun.aggregate=mean)
+# write to a file (optional)
+#write.table(flipDat, "tidyDat.txt",append = TRUE,quote=FALSE,sep=" ",dec=".",row.names=FALSE,col.names=c("subjectID","activity","variables","mean"))
