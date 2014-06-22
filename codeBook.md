@@ -21,7 +21,7 @@
 <dl>
 	<dt>t</dt>
         	<dd>time domain</dd>
-	<dt>f>/dt>
+	<dt>f</dt>
 		<dd>Frequency domain.</dd>
 	<dt>mean</dt>
 		<dd>Average for the preceding descriptors in the names.</dd>
