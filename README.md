@@ -1,7 +1,7 @@
 getCleanAssign
 ==============
 
-This repo is for the final project for JHOPS's 'Getting and Cleaning Data' and includes; run_analysis.R, codebook.md and README.md
+This repo is for the final project for Johns Hopkins's 'Getting and Cleaning Data' and includes; run_analysis.R, codebook.md and README.md
 
 <p>The original data comes from https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip with all the necessary files inside a zip file. This data was part of a study conducted at UCI about 'Human Activity Recognition Using Smartphones' and the info. can be accessed here: http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones. What follows below is a detailed description of my script which has as its end goal, the production of a 'tidy' data set with means for each combination of variable, subject and activity. For this script, it is assumed that the zip file has been unzipped and the relevant files are in your working directory.</p>
  
@@ -42,17 +42,20 @@ bigDat<- rbind(testDat,trainDat)
 
 
  <h2>PART 2: Extract variables that have std() or mean() in the name.</h2>
-      *<b>Read in features.txt and use as column names for X_test.</b>*<br>
+ *<b>Read in features.txt(which is a list of variable names) and use as column names for X_test.</b>*<br>
 varNames<- read.csv("./features.txt",header=FALSE, sep="")<br>
 names(bigDat)<- c(as.character(varNames$V2),"activity.labels","subjectID")<br>
-     *<b>Extract relevant variables from bigDat by logical vector.</b>*<br>
+ *<b>Extract relevant variables from bigDat by logical vector.</b>*<br>
+*<b>'grepl()' will extract all variables with the words 'mean()','std()','activity', or 'subject'.</b>*<br>
 colNamesVec<-grepl("mean\\(\\)|std\\(\\)|activity|subject", names(bigDat))<br>
+*<b>subset using logical vector for the relevant columns.</b>*<br>
 bigDat<-bigDat[,colNamesVec]
 
 
  <h2>PART 3: change 'activity.labels' from number codes to words</h2>
     *<b>Using activity_labels.txt as the source of activity names.</b>*<br>
 bigDat$activity.labels<-as.factor(bigDat$activity.labels)<br>
+*<b>Change the level names using 'levels()' function.</b>*<br>
 levels(bigDat$activity.labels)<- list(WALKING="1",WALKING_UPSTAIRS="2",
                                       WALKING_DOWNSTAIRS="3", SITTING="4"
                                       , STANDING="5",LAYING="6")<br>
@@ -73,5 +76,14 @@ names(bigDat)<- c("tBodyAcc_mean_X","tBodyAcc_mean_Y","tBodyAcc_mean_Z","tBodyAc
 
  <h2>PART 5: Creates a second, independent tidy data set</h2> 
   *<b>Using the average of each variable for each activity and each subject. Here is where the 'reshape2' package comes in handy.</b>*<br>
+*<b>'melt()' restructures data so that every measured variable is in its own row, with 'subjectID' and 'activity' as identifiers.</b>*<br>
 meltDat<-melt(bigDat, id=c("subjectID","activity"))<br>
+*<b>'dcast()' reshapes melted data frame and aggregates the resulting data using the mean.</b>*<br>
 castDat<- dcast(meltDat, subjectID+activity ~ variable,fun.aggregate=mean)
+
+ <h2>OPTIONAL: convert from wide form to long form</h2> 
+  *<b>For the purpose of writing out to a legible txt file.</b>*<br>
+*<b>The code below does the same as above except the measurement variables are now being used as identifiers as well.</b>*<br>
+flipDat<- dcast(meltDat,subjectID+activity+variable~...,fun.aggregate=mean)<br>
+*<b>The code below prints the data to a text file 'tidyDat.txt' and places it in the current working directory.</b>*<br>
+write.table(flipDat, "tidyDat.txt",append = TRUE,quote=FALSE,sep=" ",dec=".",row.names=FALSE,col.names=c("subjectID","activity","variables","mean"))
